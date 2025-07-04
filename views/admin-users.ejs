@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+    <title>Manage Users</title>
+</head>
+<body>
+    <div class="header">
+        <h1>Manage Users</h1>
+        <div class="user-info">
+            Welcome, <%= user.name %> 
+            <a href="/logout" class="btn-logout">Logout</a>
+        </div>
+    </div>
+    
+    <div class="nav-menu">
+        <a href="/admin" class="nav-link">Dashboard</a>
+        <a href="/admin/users" class="nav-link active">Manage Users</a>
+        <a href="/admin/events" class="nav-link">Manage Events</a>
+        <a href="/organiser" class="nav-link">Create Events</a>
+        <a href="/admin/settings" class="nav-link">Site Settings</a>
+    </div>
+    
+    <div class="content">
+        <h2>All Users</h2>
+        
+        <% if (users.length === 0) { %>
+            <p>No users found.</p>
+        <% } else { %>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Created</th>
+                        <th>Last Login</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% users.forEach(userData => { %>
+                        <tr>
+                            <td><%= userData.name %></td>
+                            <td><%= userData.email %></td>
+                            <td><%= userData.role %></td>
+                            <td><%= new Date(userData.created_date).toLocaleDateString() %></td>
+                            <td><%= userData.last_login ? new Date(userData.last_login).toLocaleDateString() : 'Never' %></td>
+                            <td>
+                                <form action="/admin/users/<%= userData.user_id %>/role" method="post" style="display: inline;">
+                                    <select name="role" onchange="this.form.submit()">
+                                        <option value="admin" <%= userData.role === 'admin' ? 'selected' : '' %>>Admin</option>
+                                        <option value="organiser" <%= userData.role === 'organiser' ? 'selected' : '' %>>Organiser</option>
+                                        <option value="user" <%= userData.role === 'user' ? 'selected' : '' %>>User</option>
+                                    </select>
+                                </form>
+                            </td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        <% } %>
+    </div>
+</body>
+</html>

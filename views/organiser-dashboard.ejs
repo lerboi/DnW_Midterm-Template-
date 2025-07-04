@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+    <title>Organiser Dashboard</title>
+</head>
+<body>
+    <div class="header">
+        <h1>Event Management</h1>
+        <div class="user-info">
+            Welcome, <%= user.name %> 
+            <a href="/logout" class="btn-logout">Logout</a>
+        </div>
+    </div>
+    
+    <div class="nav-menu">
+        <% if (user.role === 'admin') { %>
+            <a href="/admin" class="nav-link">← Back to Admin</a>
+            <a href="/organiser" class="nav-link active">Manage Events</a>
+            <a href="/events" class="nav-link">View All Events</a>
+        <% } else { %>
+            <a href="/organiser" class="nav-link active">My Events</a>
+            <a href="/events" class="nav-link">View All Events</a>
+        <% } %>
+    </div>
+    
+    <div class="content">
+        <div class="site-info">
+            <h2><%= settings.site_name %></h2>
+            <p><%= settings.site_description %></p>
+        </div>
+        
+        <div class="actions">
+            <form action="/organiser/create-event" method="post" style="display: inline;">
+                <button type="submit" class="btn-primary">Create New Event</button>
+            </form>
+        </div>
+        
+        <div class="events-section">
+            <h3>Published Events</h3>
+            <% if (publishedEvents.length === 0) { %>
+                <p>No published events.</p>
+            <% } else { %>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Date</th>
+                            <th>Published</th>
+                            <th>Tickets</th>
+                            <% if (user.role === 'admin') { %><th>Creator</th><% } %>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% publishedEvents.forEach(event => { %>
+                            <tr>
+                                <td><%= event.title %></td>
+                                <td><%= new Date(event.event_date).toLocaleDateString() %></td>
+                                <td><%= new Date(event.published_date).toLocaleDateString() %></td>
+                                <td>Full: <%= event.full_price_tickets %> | Concession: <%= event.concession_tickets %></td>
+                                <% if (user.role === 'admin') { %><td><%= event.creator_name || 'Unknown' %></td><% } %>
+                                <td>
+                                    <a href="/events/<%= event.event_id %>" class="btn-small">View</a>
+                                    <form action="/organiser/delete-event/<%= event.event_id %>" method="post" style="display: inline;">
+                                        <button type="submit" class="btn-danger btn-small" onclick="return confirm('Delete this event?')">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            <% } %>
+        </div>
+        
+        <div class="events-section">
+            <h3>Draft Events</h3>
+            <% if (draftEvents.length === 0) { %>
+                <p>No draft events.</p>
+            <% } else { %>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Date</th>
+                            <th>Modified</th>
+                            <% if (user.role === 'admin') { %><th>Creator</th><% } %>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% draftEvents.forEach(event => { %>
+                            <tr>
+                                <td><%= event.title %></td>
+                                <td><%= event.event_date ? new Date(event.event_date).toLocaleDateString() : 'Not set' %></td>
+                                <td><%= new Date(event.modified_date).toLocaleDateString() %></td>
+                                <% if (user.role === 'admin') { %><td><%= event.creator_name || 'Unknown' %></td><% } %>
+                                <td>
+                                    <a href="/organiser/edit-event/<%= event.event_id %>" class="btn-small">Edit</a>
+                                    <form action="/organiser/publish-event/<%= event.event_id %>" method="post" style="display: inline;">
+                                        <button type="submit" class="btn-secondary btn-small">Publish</button>
+                                    </form>
+                                    <form action="/organiser/delete-event/<%= event.event_id %>" method="post" style="display: inline;">
+                                        <button type="submit" class="btn-danger btn-small" onclick="return confirm('Delete this event?')">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            <% } %>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+    <title><%= event.title %> - Event Details</title>
+</head>
+<body>
+    <div class="header">
+        <h1>Event Details</h1>
+        <div class="user-info">
+            Welcome, <%= user.name %> 
+            <a href="/logout" class="btn-logout">Logout</a>
+        </div>
+    </div>
+    
+    <div class="nav-menu">
+        <% if (user.role === 'admin') { %>
+            <a href="/admin" class="nav-link">← Back to Admin</a>
+            <a href="/organiser" class="nav-link">Manage Events</a>
+            <a href="/events" class="nav-link">← Back to All Events</a>
+        <% } else if (user.role === 'organiser') { %>
+            <a href="/organiser" class="nav-link">← Back to My Events</a>
+            <a href="/events" class="nav-link">← Back to All Events</a>
+        <% } else { %>
+            <a href="/events" class="nav-link">← Back to All Events</a>
+            <a href="/events/my/bookings" class="nav-link">My Bookings</a>
+        <% } %>
+    </div>
+    
+    <div class="content">
+        <div class="event-details">
+            <h2><%= event.title %></h2>
+            <p class="event-date">📅 <strong>Date:</strong> <%= new Date(event.event_date).toLocaleDateString() %></p>
+            <p class="event-description"><strong>Description:</strong> <%= event.description || 'No description available' %></p>
+        </div>
+        
+        <div class="ticket-info-section">
+            <h3>Ticket Information</h3>
+            <% if (event.full_price_tickets > 0) { %>
+                <p><strong>Full Price Tickets:</strong> $<%= event.full_price_cost %> each (<%= event.full_tickets_remaining %> available)</p>
+            <% } %>
+            
+            <% if (event.concession_tickets > 0) { %>
+                <p><strong>Concession Tickets:</strong> $<%= event.concession_cost %> each (<%= event.concession_tickets_remaining %> available)</p>
+            <% } %>
+        </div>
+        
+        <% if (user.role === 'user') { %>
+            <% if (event.full_tickets_remaining > 0 || event.concession_tickets_remaining > 0) { %>
+                <div class="booking-section">
+                    <h3>Book Tickets</h3>
+                    <form action="/events/<%= event.event_id %>/book" method="post" class="booking-form">
+                        <% if (event.full_tickets_remaining > 0) { %>
+                            <div class="form-group">
+                                <label for="full_price_tickets">Full Price Tickets ($<%= event.full_price_cost %> each):</label>
+                                <input type="number" id="full_price_tickets" name="full_price_tickets" 
+                                       min="0" max="<%= event.full_tickets_remaining %>" value="0">
+                            </div>
+                        <% } %>
+                        
+                        <% if (event.concession_tickets_remaining > 0) { %>
+                            <div class="form-group">
+                                <label for="concession_tickets">Concession Tickets ($<%= event.concession_cost %> each):</label>
+                                <input type="number" id="concession_tickets" name="concession_tickets" 
+                                       min="0" max="<%= event.concession_tickets_remaining %>" value="0">
+                            </div>
+                        <% } %>
+                        
+                        <button type="submit" class="btn-primary">Book Tickets</button>
+                    </form>
+                </div>
+            <% } else { %>
+                <div class="sold-out">
+                    <h3>Sorry, this event is sold out!</h3>
+                    <p>All tickets have been booked.</p>
+                </div>
+            <% } %>
+        <% } else { %>
+            <div class="admin-organiser-view">
+                <h3>Event Overview</h3>
+                <p>You are viewing this event as an <%= user.role %>. Regular users can book tickets from this page.</p>
+                <% if (user.role === 'admin' || user.role === 'organiser') { %>
+                    <a href="/organiser/edit-event/<%= event.event_id %>" class="btn-secondary">Edit This Event</a>
+                <% } %>
+            </div>
+        <% } %>
+    </div>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+    <title>Site Settings</title>
+</head>
+<body>
+    <div class="header">
+        <h1>Site Settings</h1>
+        <div class="user-info">
+            Welcome, <%= user.name %> 
+            <a href="/logout" class="btn-logout">Logout</a>
+        </div>
+    </div>
+    
+    <div class="nav-menu">
+        <a href="/admin" class="nav-link">Dashboard</a>
+        <a href="/admin/users" class="nav-link">Manage Users</a>
+        <a href="/admin/events" class="nav-link">Manage Events</a>
+        <a href="/organiser" class="nav-link">Create Events</a>
+        <a href="/admin/settings" class="nav-link active">Site Settings</a>
+    </div>
+    
+    <div class="content">
+        <h2>Configure Site Settings</h2>
+        <p>Update the site name and description that appears throughout the application.</p>
+        
+        <form action="/admin/settings" method="post" class="settings-form">
+            <div class="form-group">
+                <label for="site_name">Site Name:</label>
+                <input type="text" id="site_name" name="site_name" value="<%= settings.site_name %>" required>
+                <small>This will appear as the main heading on user pages</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="site_description">Site Description:</label>
+                <textarea id="site_description" name="site_description" required><%= settings.site_description %></textarea>
+                <small>A brief description of your event management site</small>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">Update Settings</button>
+                <a href="/admin" class="btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

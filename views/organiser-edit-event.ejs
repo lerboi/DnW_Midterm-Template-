@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+    <title>Edit Event</title>
+</head>
+<body>
+    <div class="header">
+        <h1>Edit Event</h1>
+        <div class="user-info">
+            Welcome, <%= user.name %> 
+            <a href="/logout" class="btn-logout">Logout</a>
+        </div>
+    </div>
+    
+    <div class="nav-menu">
+        <% if (user.role === 'admin') { %>
+            <a href="/admin" class="nav-link">← Back to Admin</a>
+            <a href="/organiser" class="nav-link">Manage Events</a>
+        <% } else { %>
+            <a href="/organiser" class="nav-link">← Back to My Events</a>
+        <% } %>
+        <a href="/events" class="nav-link">View All Events</a>
+    </div>
+    
+    <div class="content">
+        <div class="event-info">
+            <p><strong>Event created:</strong> <%= new Date(event.created_date).toLocaleDateString() %></p>
+            <% if (event.status === 'published') { %>
+                <span class="status-published">📅 Published</span>
+            <% } else { %>
+                <span class="status-draft">📝 Draft</span>
+            <% } %>
+        </div>
+        
+        <form action="/organiser/edit-event/<%= event.event_id %>" method="post" class="event-form">
+            <div class="form-section">
+                <h3>Event Details</h3>
+                
+                <div class="form-group">
+                    <label for="title">Event Title:</label>
+                    <input type="text" id="title" name="title" value="<%= event.title %>" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Event Description:</label>
+                    <textarea id="description" name="description"><%= event.description %></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="event_date">Event Date & Time:</label>
+                    <input type="datetime-local" id="event_date" name="event_date" value="<%= event.event_date %>" required>
+                </div>
+            </div>
+            
+            <div class="form-section">
+                <h3>Ticket Configuration</h3>
+                
+                <div class="ticket-section">
+                    <h4>Full Price Tickets</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="full_price_tickets">Number of Tickets:</label>
+                            <input type="number" id="full_price_tickets" name="full_price_tickets" 
+                                   value="<%= event.full_price_tickets %>" min="0" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="full_price_cost">Price per Ticket ($):</label>
+                            <input type="number" id="full_price_cost" name="full_price_cost" 
+                                   value="<%= event.full_price_cost %>" min="0" step="0.01" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="ticket-section">
+                    <h4>Concession Tickets</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="concession_tickets">Number of Tickets:</label>
+                            <input type="number" id="concession_tickets" name="concession_tickets" 
+                                   value="<%= event.concession_tickets %>" min="0" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="concession_cost">Price per Ticket ($):</label>
+                            <input type="number" id="concession_cost" name="concession_cost" 
+                                   value="<%= event.concession_cost %>" min="0" step="0.01" required>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">Save Changes</button>
+                <a href="/organiser" class="btn-secondary">Cancel</a>
+                
+                <% if (event.status === 'draft') { %>
+                    <form action="/organiser/publish-event/<%= event.event_id %>" method="post" style="display: inline;">
+                        <button type="submit" class="btn-success">Save & Publish</button>
+                    </form>
+                <% } %>
+            </div>
+        </form>
+        
+        <% if (event.status === 'published') { %>
+            <div class="published-info">
+                <h3>Event is Live</h3>
+                <p>This event is currently published and visible to users.</p>
+                <a href="/events/<%= event.event_id %>" class="btn-secondary">View Public Page</a>
+            </div>
+        <% } %>
+    </div>
+</body>
+</html>

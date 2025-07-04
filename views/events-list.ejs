@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+    <title>Available Events</title>
+</head>
+<body>
+    <div class="header">
+        <h1><%= settings.site_name %></h1>
+        <div class="user-info">
+            Welcome, <%= user.name %> 
+            <a href="/logout" class="btn-logout">Logout</a>
+        </div>
+    </div>
+    
+    <div class="nav-menu">
+        <% if (user.role === 'admin') { %>
+            <a href="/admin" class="nav-link">← Back to Admin</a>
+            <a href="/organiser" class="nav-link">Manage Events</a>
+            <a href="/events" class="nav-link active">View All Events</a>
+        <% } else if (user.role === 'organiser') { %>
+            <a href="/organiser" class="nav-link">← Back to My Events</a>
+            <a href="/events" class="nav-link active">View All Events</a>
+        <% } else { %>
+            <a href="/events" class="nav-link active">All Events</a>
+            <a href="/events/my/bookings" class="nav-link">My Bookings</a>
+        <% } %>
+    </div>
+    
+    <div class="content">
+        <div class="site-description">
+            <p><%= settings.site_description %></p>
+        </div>
+        
+        <h2>Available Events</h2>
+        
+        <% if (events.length === 0) { %>
+            <div class="no-events">
+                <p>No events are currently available.</p>
+                <% if (user.role === 'admin' || user.role === 'organiser') { %>
+                    <a href="/organiser/create-event" class="btn-primary">Create First Event</a>
+                <% } %>
+            </div>
+        <% } else { %>
+            <div class="events-grid">
+                <% events.forEach(event => { %>
+                    <div class="event-card">
+                        <h3><%= event.title %></h3>
+                        <p class="event-date">📅 <%= new Date(event.event_date).toLocaleDateString() %></p>
+                        <p class="event-description"><%= event.description || 'No description available' %></p>
+                        <div class="event-tickets">
+                            <% if (event.full_price_tickets > 0) { %>
+                                <span class="ticket-info">Full Price: $<%= event.full_price_cost %></span>
+                            <% } %>
+                            <% if (event.concession_tickets > 0) { %>
+                                <span class="ticket-info">Concession: $<%= event.concession_cost %></span>
+                            <% } %>
+                        </div>
+                        <% if (user.role === 'user') { %>
+                            <a href="/events/<%= event.event_id %>" class="btn-primary">Book Tickets</a>
+                        <% } else { %>
+                            <a href="/events/<%= event.event_id %>" class="btn-secondary">View Details</a>
+                        <% } %>
+                    </div>
+                <% }); %>
+            </div>
+        <% } %>
+    </div>
+</body>
+</html>

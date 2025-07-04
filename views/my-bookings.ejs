@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+    <title>My Bookings</title>
+</head>
+<body>
+    <div class="header">
+        <h1>My Bookings</h1>
+        <div class="user-info">
+            Welcome, <%= user.name %> 
+            <a href="/logout" class="btn-logout">Logout</a>
+        </div>
+    </div>
+    
+    <div class="nav-menu">
+        <% if (user.role === 'admin') { %>
+            <a href="/admin" class="nav-link">← Back to Admin</a>
+            <a href="/organiser" class="nav-link">Manage Events</a>
+            <a href="/events" class="nav-link">View All Events</a>
+            <a href="/events/my/bookings" class="nav-link active">My Bookings</a>
+        <% } else if (user.role === 'organiser') { %>
+            <a href="/organiser" class="nav-link">← Back to My Events</a>
+            <a href="/events" class="nav-link">View All Events</a>
+            <a href="/events/my/bookings" class="nav-link active">My Bookings</a>
+        <% } else { %>
+            <a href="/events" class="nav-link">All Events</a>
+            <a href="/events/my/bookings" class="nav-link active">My Bookings</a>
+        <% } %>
+    </div>
+    
+    <div class="content">
+        <h2>Your Event Bookings</h2>
+        
+        <% if (bookings.length === 0) { %>
+            <div class="no-bookings">
+                <p>You haven't booked any events yet.</p>
+                <a href="/events" class="btn-primary">Browse Available Events</a>
+            </div>
+        <% } else { %>
+            <div class="bookings-list">
+                <% bookings.forEach(booking => { %>
+                    <div class="booking-card">
+                        <div class="booking-header">
+                            <h3><%= booking.title %></h3>
+                            <span class="booking-date">📅 <%= new Date(booking.event_date).toLocaleDateString() %></span>
+                        </div>
+                        
+                        <div class="booking-details">
+                            <div class="tickets-info">
+                                <% if (booking.full_price_tickets_booked > 0) { %>
+                                    <p><strong>Full Price Tickets:</strong> <%= booking.full_price_tickets_booked %> × $<%= booking.full_price_cost %> = $<%= (booking.full_price_tickets_booked * booking.full_price_cost).toFixed(2) %></p>
+                                <% } %>
+                                
+                                <% if (booking.concession_tickets_booked > 0) { %>
+                                    <p><strong>Concession Tickets:</strong> <%= booking.concession_tickets_booked %> × $<%= booking.concession_cost %> = $<%= (booking.concession_tickets_booked * booking.concession_cost).toFixed(2) %></p>
+                                <% } %>
+                                
+                                <p class="total-cost">
+                                    <strong>Total Cost: $<%= ((booking.full_price_tickets_booked * booking.full_price_cost) + (booking.concession_tickets_booked * booking.concession_cost)).toFixed(2) %></strong>
+                                </p>
+                            </div>
+                            
+                            <div class="booking-meta">
+                                <p class="booking-date-small">Booked on: <%= new Date(booking.booking_date).toLocaleDateString() %></p>
+                                <p class="total-tickets">Total Tickets: <%= booking.full_price_tickets_booked + booking.concession_tickets_booked %></p>
+                            </div>
+                        </div>
+                        
+                        <div class="booking-actions">
+                            <a href="/events/<%= booking.event_id %>" class="btn-secondary">View Event</a>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+            
+            <div class="booking-summary">
+                <h3>Summary</h3>
+                <p><strong>Total Bookings:</strong> <%= bookings.length %></p>
+                <p><strong>Total Tickets:</strong> <%= bookings.reduce((sum, booking) => sum + booking.full_price_tickets_booked + booking.concession_tickets_booked, 0) %></p>
+                <p><strong>Total Spent:</strong> $<%= bookings.reduce((sum, booking) => sum + (booking.full_price_tickets_booked * booking.full_price_cost) + (booking.concession_tickets_booked * booking.concession_cost), 0).toFixed(2) %></p>
+            </div>
+        <% } %>
+    </div>
+</body>
+</html>
