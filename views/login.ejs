@@ -15,6 +15,12 @@
                         <h1 class="text-center mb-2">Event Manager</h1>
                         <h2 class="text-center text-muted mb-4">Login</h2>
                         
+                        <% if (typeof success !== 'undefined' && success) { %>
+                            <div class="alert alert-success" role="alert">
+                                <%= success %>
+                            </div>
+                        <% } %>
+                        
                         <% if (error) { %>
                             <div class="alert alert-danger" role="alert">
                                 <%= error %>

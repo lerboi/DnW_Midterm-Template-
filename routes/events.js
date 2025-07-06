@@ -1,16 +1,7 @@
-/**
- * events.js
- * Routes for user event viewing and booking functionality
- */
-
 const express = require("express");
 const router = express.Router();
 
-/**
- * @desc Display the events page with published events for users
- * @input None
- * @output Renders events page with published events list
- */
+// Display the events page with events
 router.get("/", (req, res, next) => {
     // Get site settings first
     const settingsQuery = "SELECT * FROM site_settings LIMIT 1";
@@ -37,11 +28,7 @@ router.get("/", (req, res, next) => {
     });
 });
 
-/**
- * @desc Display individual event page for booking
- * @input event_id from URL parameter
- * @output Renders event details page with booking form
- */
+// Display event page for booking
 router.get("/:id", (req, res, next) => {
     const eventId = req.params.id;
     
@@ -62,30 +49,52 @@ router.get("/:id", (req, res, next) => {
         } else if (!event) {
             res.status(404).send('Event not found');
         } else {
-            res.render('event-details', { 
-                user: req.session.user,
-                event: event 
-            });
+            // If user is admin or organiser, get booking data for this event
+            if (req.session.user.role === 'admin' || req.session.user.role === 'organiser') {
+                const bookingsQuery = `
+                    SELECT b.booking_id, b.event_id, b.user_id, b.attendee_name, b.attendee_email,
+                           b.full_price_tickets_booked, b.concession_tickets_booked, b.booking_date,
+                           u.name as booker_name, u.email as booker_email
+                    FROM bookings b
+                    JOIN users u ON b.user_id = u.user_id
+                    WHERE b.event_id = ?
+                    ORDER BY b.booking_date DESC
+                `;
+                
+                global.db.all(bookingsQuery, [eventId], function (err, bookings) {
+                    if (err) {
+                        next(err);
+                    } else {
+                        res.render('event-details', { 
+                            user: req.session.user,
+                            event: event,
+                            bookings: bookings || []
+                        });
+                    }
+                });
+            } else {
+                res.render('event-details', { 
+                    user: req.session.user,
+                    event: event,
+                    bookings: null
+                });
+            }
         }
     });
 });
 
-/**
- * @desc Process ticket booking
- * @input event_id from URL, full_price_tickets, concession_tickets from form
- * @output Creates booking record and redirects to events list
- */
+// Process ticket booking 
 router.post("/:id/book", (req, res, next) => {
     const eventId = req.params.id;
-    const { full_price_tickets, concession_tickets } = req.body;
+    const { attendee_name, attendee_email, full_price_tickets, concession_tickets } = req.body;
     const fullTickets = parseInt(full_price_tickets) || 0;
     const concessionTickets = parseInt(concession_tickets) || 0;
     
-    // Validate that at least one ticket is being booked
+    // Validatation
     if (fullTickets === 0 && concessionTickets === 0) {
         return res.status(400).send('Please select at least one ticket');
     }
-    
+
     // Check ticket availability
     const checkQuery = `
         SELECT e.*, 
@@ -108,32 +117,34 @@ router.post("/:id/book", (req, res, next) => {
                 return res.status(400).send('Not enough tickets available');
             }
             
-            // Create booking
+            // Create booking with attendee information
             const bookingQuery = `
-                INSERT INTO bookings (event_id, user_id, full_price_tickets_booked, 
-                                    concession_tickets_booked, booking_date) 
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO bookings (event_id, user_id, attendee_name, attendee_email, 
+                                    full_price_tickets_booked, concession_tickets_booked, booking_date) 
+                VALUES (?, ?, ?, ?, ?, ?, ?)
             `;
             const now = new Date().toISOString();
             
-            global.db.run(bookingQuery, [eventId, req.session.user.user_id, fullTickets, concessionTickets, now], 
-                function (err) {
-                    if (err) {
-                        next(err);
-                    } else {
-                        res.redirect('/events');
-                    }
+            global.db.run(bookingQuery, [
+                eventId, 
+                req.session.user.user_id, 
+                attendee_name,
+                attendee_email,
+                fullTickets, 
+                concessionTickets, 
+                now
+            ], function (err) {
+                if (err) {
+                    next(err);
+                } else {
+                    res.redirect('/events');
                 }
-            );
+            });
         }
     });
 });
 
-/**
- * @desc Display user's bookings
- * @input None
- * @output Renders user's booking history
- */
+// Display user booking info
 router.get("/my/bookings", (req, res, next) => {
     const query = `
         SELECT b.*, e.title, e.event_date, e.full_price_cost, e.concession_cost
@@ -155,5 +166,4 @@ router.get("/my/bookings", (req, res, next) => {
     });
 });
 
-// Export the router object so index.js can access it
 module.exports = router;

@@ -1,18 +1,8 @@
-/**
- * admin.js
- * Routes for admin functionality including user management and event management
- */
-
 const express = require("express");
 const router = express.Router();
 
-/**
- * @desc Display admin dashboard
- * @input None
- * @output Renders admin dashboard with user and event statistics
- */
+// Display admin dashboard with its data
 router.get("/", (req, res, next) => {
-    // Get user statistics
     const userStatsQuery = `
         SELECT role, COUNT(*) as count 
         FROM users 
@@ -45,11 +35,7 @@ router.get("/", (req, res, next) => {
     });
 });
 
-/**
- * @desc Display all users for management
- * @input None
- * @output Renders user management page with list of all users
- */
+// Display user data
 router.get("/users", (req, res, next) => {
     const query = "SELECT user_id, email, name, role, created_date, last_login FROM users ORDER BY created_date DESC";
     
@@ -65,11 +51,7 @@ router.get("/users", (req, res, next) => {
     });
 });
 
-/**
- * @desc Update user role
- * @input user_id, role from form
- * @output Updates user role and redirects back to user management
- */
+// Update user role 
 router.post("/users/:id/role", (req, res, next) => {
     const userId = req.params.id;
     const { role } = req.body;
@@ -89,11 +71,7 @@ router.post("/users/:id/role", (req, res, next) => {
     });
 });
 
-/**
- * @desc Display all events for admin management
- * @input None
- * @output Renders event management page with all events
- */
+// Display all events 
 router.get("/events", (req, res, next) => {
     const query = `
         SELECT e.*, u.name as creator_name
@@ -114,11 +92,7 @@ router.get("/events", (req, res, next) => {
     });
 });
 
-/**
- * @desc Delete any event (admin privilege)
- * @input event_id from URL parameter
- * @output Removes event from database and redirects back
- */
+// Delete any event 
 router.post("/events/:id/delete", (req, res, next) => {
     const eventId = req.params.id;
     const query = "DELETE FROM events WHERE event_id = ?";
@@ -132,11 +106,7 @@ router.post("/events/:id/delete", (req, res, next) => {
     });
 });
 
-/**
- * @desc Display site settings (admin only)
- * @input None
- * @output Renders site settings form
- */
+// Display site settings configuration page
 router.get("/settings", (req, res, next) => {
     const query = "SELECT * FROM site_settings LIMIT 1";
     
@@ -152,11 +122,7 @@ router.get("/settings", (req, res, next) => {
     });
 });
 
-/**
- * @desc Update site settings
- * @input site_name, site_description from form
- * @output Updates settings and redirects to admin dashboard
- */
+// Update site settings (site name and description)
 router.post("/settings", (req, res, next) => {
     const { site_name, site_description } = req.body;
     
@@ -175,5 +141,4 @@ router.post("/settings", (req, res, next) => {
     });
 });
 
-// Export the router object so index.js can access it
 module.exports = router;

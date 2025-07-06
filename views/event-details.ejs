@@ -3,89 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="/main.css" />
     <title><%= event.title %> - Event Details</title>
 </head>
-<body>
-    <div class="header">
-        <h1>Event Details</h1>
-        <div class="user-info">
-            Welcome, <%= user.name %> 
-            <a href="/logout" class="btn-logout">Logout</a>
+<body class="bg-light">
+    <nav class="navbar navbar-light bg-white border-bottom">
+        <div class="container-fluid">
+            <h1 class="navbar-brand mb-0">Event Details</h1>
+            <div>
+                <span class="me-3">Welcome, <%= user.name %></span>
+                <a href="/logout" class="btn btn-sm btn-outline-secondary">Logout</a>
+            </div>
         </div>
-    </div>
+    </nav>
     
-    <div class="nav-menu">
-        <% if (user.role === 'admin') { %>
-            <a href="/admin" class="nav-link">← Back to Admin</a>
-            <a href="/organiser" class="nav-link">Manage Events</a>
-            <a href="/events" class="nav-link">← Back to All Events</a>
-        <% } else if (user.role === 'organiser') { %>
-            <a href="/organiser" class="nav-link">← Back to My Events</a>
-            <a href="/events" class="nav-link">← Back to All Events</a>
-        <% } else { %>
-            <a href="/events" class="nav-link">← Back to All Events</a>
-            <a href="/events/my/bookings" class="nav-link">My Bookings</a>
-        <% } %>
-    </div>
+    <nav class="navbar navbar-light bg-light">
+        <div class="container-fluid">
+            <ul class="navbar-nav flex-row">
+                <% if (user.role === 'admin') { %>
+                    <li class="nav-item me-3">
+                        <a href="/admin" class="nav-link">← Back to Admin</a>
+                    </li>
+                    <li class="nav-item me-3">
+                        <a href="/organiser" class="nav-link">Manage Events</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/events" class="nav-link">← Back to All Events</a>
+                    </li>
+                <% } else if (user.role === 'organiser') { %>
+                    <li class="nav-item me-3">
+                        <a href="/organiser" class="nav-link">← Back to My Events</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/events" class="nav-link">← Back to All Events</a>
+                    </li>
+                <% } else { %>
+                    <li class="nav-item me-3">
+                        <a href="/events" class="nav-link">← Back to All Events</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/events/my/bookings" class="nav-link">My Bookings</a>
+                    </li>
+                <% } %>
+            </ul>
+        </div>
+    </nav>
     
-    <div class="content">
-        <div class="event-details">
-            <h2><%= event.title %></h2>
-            <p class="event-date">📅 <strong>Date:</strong> <%= new Date(event.event_date).toLocaleDateString() %></p>
-            <p class="event-description"><strong>Description:</strong> <%= event.description || 'No description available' %></p>
+    <div class="container mt-4">
+        <div class="card">
+            <div class="card-body">
+                <h2><%= event.title %></h2>
+                <p><strong>Date:</strong> <%= new Date(event.event_date).toLocaleDateString() %></p>
+                <p><strong>Description:</strong> <%= event.description || 'No description available' %></p>
+            </div>
         </div>
         
-        <div class="ticket-info-section">
-            <h3>Ticket Information</h3>
-            <% if (event.full_price_tickets > 0) { %>
-                <p><strong>Full Price Tickets:</strong> $<%= event.full_price_cost %> each (<%= event.full_tickets_remaining %> available)</p>
-            <% } %>
-            
-            <% if (event.concession_tickets > 0) { %>
-                <p><strong>Concession Tickets:</strong> $<%= event.concession_cost %> each (<%= event.concession_tickets_remaining %> available)</p>
-            <% } %>
+        <div class="card mt-3">
+            <div class="card-body">
+                <h5>Ticket Information</h5>
+                <% if (event.full_price_tickets > 0) { %>
+                    <p><strong>Full Price Tickets:</strong> $<%= event.full_price_cost %> each (<%= event.full_tickets_remaining %> available)</p>
+                <% } %>
+                
+                <% if (event.concession_tickets > 0) { %>
+                    <p><strong>Concession Tickets:</strong> $<%= event.concession_cost %> each (<%= event.concession_tickets_remaining %> available)</p>
+                <% } %>
+            </div>
         </div>
         
         <% if (user.role === 'user') { %>
             <% if (event.full_tickets_remaining > 0 || event.concession_tickets_remaining > 0) { %>
-                <div class="booking-section">
-                    <h3>Book Tickets</h3>
-                    <form action="/events/<%= event.event_id %>/book" method="post" class="booking-form">
-                        <% if (event.full_tickets_remaining > 0) { %>
-                            <div class="form-group">
-                                <label for="full_price_tickets">Full Price Tickets ($<%= event.full_price_cost %> each):</label>
-                                <input type="number" id="full_price_tickets" name="full_price_tickets" 
-                                       min="0" max="<%= event.full_tickets_remaining %>" value="0">
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <h5>Book Tickets</h5>
+                        <form action="/events/<%= event.event_id %>/book" method="post">
+                            <div class="mb-3">
+                                <label for="attendee_name" class="form-label">Attendee Name:</label>
+                                <input type="text" class="form-control" id="attendee_name" name="attendee_name" 
+                                       value="<%= user.name %>" required>
                             </div>
-                        <% } %>
-                        
-                        <% if (event.concession_tickets_remaining > 0) { %>
-                            <div class="form-group">
-                                <label for="concession_tickets">Concession Tickets ($<%= event.concession_cost %> each):</label>
-                                <input type="number" id="concession_tickets" name="concession_tickets" 
-                                       min="0" max="<%= event.concession_tickets_remaining %>" value="0">
+
+                            <div class="mb-3">
+                                <label for="attendee_email" class="form-label">Attendee Email:</label>
+                                <input type="email" class="form-control" id="attendee_email" name="attendee_email" 
+                                       value="<%= user.email %>" required>
                             </div>
-                        <% } %>
-                        
-                        <button type="submit" class="btn-primary">Book Tickets</button>
-                    </form>
+                            
+                            <% if (event.full_tickets_remaining > 0) { %>
+                                <div class="mb-3">
+                                    <label for="full_price_tickets" class="form-label">Full Price Tickets ($<%= event.full_price_cost %> each):</label>
+                                    <input type="number" class="form-control" id="full_price_tickets" name="full_price_tickets" 
+                                           min="0" max="<%= event.full_tickets_remaining %>" value="0">
+                                </div>
+                            <% } %>
+                            
+                            <% if (event.concession_tickets_remaining > 0) { %>
+                                <div class="mb-3">
+                                    <label for="concession_tickets" class="form-label">Concession Tickets ($<%= event.concession_cost %> each):</label>
+                                    <input type="number" class="form-control" id="concession_tickets" name="concession_tickets" 
+                                           min="0" max="<%= event.concession_tickets_remaining %>" value="0">
+                                </div>
+                            <% } %>
+                            
+                            <button type="submit" class="btn btn-primary">Book Tickets</button>
+                        </form>
+                    </div>
                 </div>
             <% } else { %>
-                <div class="sold-out">
-                    <h3>Sorry, this event is sold out!</h3>
+                <div class="alert alert-danger mt-3">
+                    <h5>Sorry, this event is sold out!</h5>
                     <p>All tickets have been booked.</p>
                 </div>
             <% } %>
         <% } else { %>
-            <div class="admin-organiser-view">
-                <h3>Event Overview</h3>
-                <p>You are viewing this event as an <%= user.role %>. Regular users can book tickets from this page.</p>
-                <% if (user.role === 'admin' || user.role === 'organiser') { %>
-                    <a href="/organiser/edit-event/<%= event.event_id %>" class="btn-secondary">Edit This Event</a>
-                <% } %>
-            </div>
+            <% if (user.role === 'admin' || user.role === 'organiser') { %>
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <h5>Event Bookings</h5>
+                        <% if (typeof bookings !== 'undefined' && bookings && bookings.length > 0) { %>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Attendee Name</th>
+                                            <th>Email</th>
+                                            <th>Tickets Booked</th>
+                                            <th>Total Paid</th>
+                                            <th>Booking Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% bookings.forEach(booking => { %>
+                                            <tr>
+                                                <td><%= booking.attendee_name || 'Not specified' %></td>
+                                                <td><%= booking.attendee_email || booking.booker_email || 'Not specified' %></td>
+                                                <td>
+                                                    <% if (booking.full_price_tickets_booked > 0) { %>
+                                                        Full: <%= booking.full_price_tickets_booked %><br>
+                                                    <% } %>
+                                                    <% if (booking.concession_tickets_booked > 0) { %>
+                                                        Concession: <%= booking.concession_tickets_booked %>
+                                                    <% } %>
+                                                    <% if (booking.full_price_tickets_booked === 0 && booking.concession_tickets_booked === 0) { %>
+                                                        No tickets
+                                                    <% } %>
+                                                </td>
+                                                <td>$<%= ((booking.full_price_tickets_booked * event.full_price_cost) + (booking.concession_tickets_booked * event.concession_cost)).toFixed(2) %></td>
+                                                <td><%= new Date(booking.booking_date).toLocaleDateString() %></td>
+                                            </tr>
+                                        <% }); %>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="mt-3">
+                                <h6>Booking Summary</h6>
+                                <p class="mb-1"><strong>Total Bookings:</strong> <%= bookings.length %></p>
+                                <p class="mb-1"><strong>Total Tickets Sold:</strong> <%= bookings.reduce((sum, booking) => sum + booking.full_price_tickets_booked + booking.concession_tickets_booked, 0) %></p>
+                                <p class="mb-0"><strong>Total Revenue:</strong> $<%= bookings.reduce((sum, booking) => sum + (booking.full_price_tickets_booked * event.full_price_cost) + (booking.concession_tickets_booked * event.concession_cost), 0).toFixed(2) %></p>
+                            </div>
+                        <% } else { %>
+                            <p class="text-muted">No bookings yet for this event.</p>
+                        <% } %>
+                        
+                        <div class="mt-3">
+                            <a href="/organiser/edit-event/<%= event.event_id %>" class="btn btn-secondary">Edit This Event</a>
+                        </div>
+                    </div>
+                </div>
+            <% } %>
         <% } %>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

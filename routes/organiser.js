@@ -1,25 +1,15 @@
-/**
- * organiser.js
- * Routes for organiser functionality including event management
- */
-
 const express = require("express");
 const router = express.Router();
 
-/**
- * @desc Display the organiser dashboard with their events
- * @input None
- * @output Renders organiser dashboard with user's events
- */
+// Display the organiser dashboard
 router.get("/", (req, res, next) => {
-    // Get site settings first
     const settingsQuery = "SELECT * FROM site_settings LIMIT 1";
     
     global.db.get(settingsQuery, function (err, settings) {
         if (err) {
             next(err);
         } else {
-            // Get published events by this user (or all if admin)
+            // Get published events by this user (or all if admin) with remaining tickets
             const publishedQuery = req.session.user.role === 'admin' ? `
                 SELECT e.*, u.name as creator_name,
                        (e.full_price_tickets - COALESCE(SUM(b.full_price_tickets_booked), 0)) as full_tickets_remaining,
@@ -47,7 +37,7 @@ router.get("/", (req, res, next) => {
                 if (err) {
                     next(err);
                 } else {
-                    // Get draft events by this user (or all if admin)
+                    // Get draft events by user (or all if admin)
                     const draftQuery = req.session.user.role === 'admin' ? 
                         "SELECT e.*, u.name as creator_name FROM events e LEFT JOIN users u ON e.created_by = u.user_id WHERE e.status = 'draft' ORDER BY e.created_date DESC" :
                         "SELECT * FROM events WHERE status = 'draft' AND created_by = ? ORDER BY created_date DESC";
@@ -72,11 +62,7 @@ router.get("/", (req, res, next) => {
     });
 });
 
-/**
- * @desc Create a new draft event
- * @input None (creates empty draft)
- * @output Creates new draft event and redirects to edit page
- */
+// Create a new draft event
 router.post("/create-event", (req, res, next) => {
     const now = new Date().toISOString();
     const query = `
@@ -94,11 +80,7 @@ router.post("/create-event", (req, res, next) => {
     });
 });
 
-/**
- * @desc Display event edit page
- * @input event_id from URL parameter
- * @output Renders event edit form with current event data
- */
+// Display event edit page
 router.get("/edit-event/:id", (req, res, next) => {
     const eventId = req.params.id;
     const query = req.session.user.role === 'admin' ?
@@ -121,14 +103,10 @@ router.get("/edit-event/:id", (req, res, next) => {
     });
 });
 
-/**
- * @desc Update event details
- * @input event_id from URL, event details from form
- * @output Updates event and redirects to organiser dashboard
- */
+// Update event details
 router.post("/edit-event/:id", (req, res, next) => {
     const eventId = req.params.id;
-    const { title, description, event_date, full_price_tickets, full_price_cost, concession_tickets, concession_cost } = req.body;
+    const { title, description, event_date, full_price_tickets, full_price_cost, concession_tickets, concession_cost, action } = req.body;
     const now = new Date().toISOString();
     
     const checkQuery = req.session.user.role === 'admin' ?
@@ -143,15 +121,34 @@ router.post("/edit-event/:id", (req, res, next) => {
         } else if (!event) {
             res.status(404).send('Event not found or access denied');
         } else {
-            const updateQuery = `
-                UPDATE events 
-                SET title = ?, description = ?, event_date = ?, full_price_tickets = ?, full_price_cost = ?, 
-                    concession_tickets = ?, concession_cost = ?, modified_date = ?
-                WHERE event_id = ?
-            `;
+            // Publish event or not
+            const shouldPublish = action === 'publish';
+            const status = shouldPublish ? 'published' : undefined;
+            const publishedDate = shouldPublish ? now : undefined;
             
-            global.db.run(updateQuery, [title, description, event_date, full_price_tickets, full_price_cost, 
-                                       concession_tickets, concession_cost, now, eventId], function (err) {
+            let updateQuery, updateParams;
+            
+            if (shouldPublish) {
+                updateQuery = `
+                    UPDATE events 
+                    SET title = ?, description = ?, event_date = ?, full_price_tickets = ?, full_price_cost = ?, 
+                        concession_tickets = ?, concession_cost = ?, modified_date = ?, status = ?, published_date = ?
+                    WHERE event_id = ?
+                `;
+                updateParams = [title, description, event_date, full_price_tickets, full_price_cost, 
+                               concession_tickets, concession_cost, now, status, publishedDate, eventId];
+            } else {
+                updateQuery = `
+                    UPDATE events 
+                    SET title = ?, description = ?, event_date = ?, full_price_tickets = ?, full_price_cost = ?, 
+                        concession_tickets = ?, concession_cost = ?, modified_date = ?
+                    WHERE event_id = ?
+                `;
+                updateParams = [title, description, event_date, full_price_tickets, full_price_cost, 
+                               concession_tickets, concession_cost, now, eventId];
+            }
+            
+            global.db.run(updateQuery, updateParams, function (err) {
                 if (err) {
                     next(err);
                 } else {
@@ -162,11 +159,7 @@ router.post("/edit-event/:id", (req, res, next) => {
     });
 });
 
-/**
- * @desc Publish a draft event
- * @input event_id from URL parameter
- * @output Updates event status to published and redirects to organiser dashboard
- */
+// Publish draft event
 router.post("/publish-event/:id", (req, res, next) => {
     const eventId = req.params.id;
     const now = new Date().toISOString();
@@ -196,11 +189,7 @@ router.post("/publish-event/:id", (req, res, next) => {
     });
 });
 
-/**
- * @desc Delete an event
- * @input event_id from URL parameter
- * @output Removes event from database and redirects to organiser dashboard
- */
+// Delete an event
 router.post("/delete-event/:id", (req, res, next) => {
     const eventId = req.params.id;
     
@@ -229,5 +218,4 @@ router.post("/delete-event/:id", (req, res, next) => {
     });
 });
 
-// Export the router object so index.js can access it
 module.exports = router;

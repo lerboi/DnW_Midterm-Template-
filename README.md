@@ -1,62 +1,95 @@
-##  Coursework Template ##
-### CM2040 Database Networks and the Web ###
+# Event Manager
 
-#### Installation requirements ####
+An Event management system built with Express.js, SQLite, and EJS. This application allows multiple users to create, manage, and book events with role-based authentication and administrative controls.
 
-* NodeJS 
-    - follow the install instructions at https://nodejs.org/en/
-    - we recommend using the latest LTS version
-* Sqlite3 
-    - follow the instructions at https://www.tutorialspoint.com/sqlite/sqlite_installation.htm 
-    - Note that the latest versions of the Mac OS and Linux come with SQLite pre-installed
+## Features
 
-#### Using this template ####
+### Core Functionality
+- Event Management: Create, edit, publish, and delete events
+- Ticket System: Support for full-price and concession tickets with availability tracking
+- User Authentication: Secure login and registration system
+- Booking System: Users can book tickets for published events
+- Site Configuration: Customizable site name and description
 
-This template sets you off in the right direction for your coursework. To get started:
+### Advanced Features (Extensions)
+- Multi-Role Authentication: Admin, Organiser, and User roles with appropriate permissions
+- User Management: Admin interface for managing users and role assignments
+- Personal Booking History: Users can view their booking history
+- Session Management: Secure session handling with express-session
+- Role-Based Access Control: Middleware protection for different user levels
 
-* Run ```npm install``` from the project directory to install all the node packages.
+## Technology Stack
 
-* Run ```npm run build-db``` to create the database on Mac or Linux 
-or run ```npm run build-db-win``` to create the database on Windows
+- Backend: Node.js with Express.js framework
+- Database: SQLite3 for data persistence
+- Frontend: Server-side rendering with EJS templates
+- Styling: Bootstrap 5 for responsive design
+- Session Management: express-session for user authentication
 
-* Run ```npm run start``` to start serving the web app (Access via http://localhost:3000)
+## Default User Accounts
 
-Test the app by browsing to the following routes:
+The system comes with pre-configured demo accounts:
 
-* http://localhost:3000
-* http://localhost:3000/users/list-users
-* http://localhost:3000/users/add-user
+- Admin: admin@gmail.com / admin123
+- Organiser: organiser@gmail.com / organiser123  
+- User: user@gmail.com / user123
 
-You can also run: 
-```npm run clean-db``` to delete the database on Mac or Linux before rebuilding it for a fresh start
-```npm run clean-db-win``` to delete the database on Windows before rebuilding it for a fresh start
+You can also create new accounts using the registration system.
 
-Please also read the document ```Working with this Template.pdf``` for further guidance.
+## User Roles and Permissions
 
-##### Creating database tables #####
+### Admin
+- Full system access
+- Manage all users and change roles
+- View and manage all events (created by any user)
+- Access to site settings configuration
+- User management dashboard
 
-* All database tables should created by modifying the db_schema.sql 
-* This allows us to review and recreate your database simply by running ```npm run build-db```
-* Do NOT create or alter database tables through other means
+### Organiser  
+- Create, edit, and publish events
+- Manage their own events
+- Delete their own events
+- View published events as attendees
 
+### User (Attendee)
+- Browse and view published events
+- Book tickets for events
+- View personal booking history
+- Register for new accounts
 
-#### Preparing for submission ####
+## Application Structure
 
-Make a copy of your project folder.
-In your copy, delete the following files and folders:
-* node_modules
-* .git (the hidden folder with your git repository)
-* database.db (your database)
+Main Files:
+- index.js - Main application entry point
+- db_schema.sql - Database schema
 
-Make sure that your ``package.json`` file includes all of the dependencies for your project. NB. you need to use the ```--save``` tag each time you use npm to install a dependency
+Routes Folder:
+- admin.js - Admin-specific routes
+- organiser.js - Organiser/event management routes
+- events.js - User/attendee routes
 
-Edit this README.md to explain any specific instructions for setting up or using your application that you want to bring to our attention:
+Views Folder (EJS Templates):
+- login.ejs - Login page
+- register.ejs - Registration page
+- admin-*.ejs - Admin interface templates
+- organiser-*.ejs - Organiser interface templates
+- events-*.ejs - User templates
+- my-bookings.ejs - User booking history
 
-* remove the existing contents that we have provided
-* include any settings that should be adjusted in configuration files
-* include a list of the additional libraries you are using
-* anything else we need to know in order to successfully run your app
+Public Folder:
+- main.css - CSS styling
 
+## Database Schema
 
-NB. we will ONLY run ```npm install```, ```npm run build-db```, and ```npm run start``` . We will NOT install additional packages to run your code and will NOT run additional build scripts. Be careful with any additional node dependencies that you use.
+The application uses four main tables:
 
+- users: User accounts with role-based permissions
+- events: Event information with ticket configuration
+- bookings: User ticket bookings and history
+- site_settings: Application configuration
+
+## Additional Libraries Used
+
+- express-session: Session middleware for authentication
+- sqlite3: SQLite database 
+- bootstrap: Frontend CSS framework
